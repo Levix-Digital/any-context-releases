@@ -68,7 +68,22 @@ if ($UserPath -notlike "*$InstallDir*") {
     Write-Host "✅ $InstallDir is already in User PATH." -ForegroundColor Gray
 }
 
+# 5. Check/Ensure Bun is available for OpenTUI desktop interface
+$bunFound = (Get-Command bun -ErrorAction SilentlyContinue) -ne $null -or (Test-Path "$env:USERPROFILE\.bun\bin\bun.exe") -or (Test-Path "$InstallDir\bun.exe")
+if (-not $bunFound) {
+    Write-Host "💡 Bun runtime not detected. Installing Bun for OpenTUI desktop interface..." -ForegroundColor Gray
+    try {
+        powershell -c "irm bun.sh/install.ps1 | iex" | Out-Null
+    } catch {}
+}
+if (Test-Path "$env:USERPROFILE\.bun\bin\bun.exe") {
+    if (-not (Test-Path "$InstallDir\bun.exe")) {
+        Copy-Item "$env:USERPROFILE\.bun\bin\bun.exe" "$InstallDir\bun.exe" -Force -ErrorAction SilentlyContinue
+    }
+}
+
 Write-Host "`n=======================================================" -ForegroundColor Cyan
 Write-Host "🎉 AnyContext (actx) installed successfully!" -ForegroundColor Green
 Write-Host "👉 Open a new terminal window and type: actx" -ForegroundColor White
+Write-Host "👉 To launch the OpenTUI desktop interface, type: actx --tui" -ForegroundColor White
 Write-Host "=======================================================\n" -ForegroundColor Cyan
